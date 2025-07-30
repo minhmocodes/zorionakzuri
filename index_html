@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>¡Abre el regalo! 🎁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: #ffe5ec;
+      font-family: 'Montserrat', Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .container {
+      margin-top: 40px;
+    }
+    .title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #d72660;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    .gift-box {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 30px auto;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+      z-index: 2;
+    }
+    .gift-box:hover {
+      transform: scale(1.07);
+    }
+    .box {
+      width: 160px;
+      height: 120px;
+      background: #d72660;
+      border-radius: 20px 20px 30px 30px;
+      position: absolute;
+      left: 0;
+      top: 40px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .lid {
+      width: 160px;
+      height: 40px;
+      background: #ffb6b9;
+      border-radius: 22px 22px 8px 8px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      transition: transform 1s cubic-bezier(.53,.18,.13,.91);
+      transform-origin: bottom center;
+    }
+    .ribbon {
+      width: 22px;
+      height: 160px;
+      background: #fff;
+      position: absolute;
+      left: 69px;
+      top: 0;
+      border-radius: 12px;
+      z-index: 3;
+    }
+    .bow {
+      width: 60px;
+      height: 30px;
+      position: absolute;
+      left: 50px;
+      top: -10px;
+      z-index: 4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .bow span {
+      display: block;
+      width: 30px;
+      height: 30px;
+      background: #d72660;
+      border-radius: 50%;
+      margin: 0 2px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .hidden {
+      display: none !important;
+    }
+    .voucher-img {
+      max-width: 90vw;
+      width: 340px;
+      margin: 0 auto 18px auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(215,38,96,0.15);
+      animation: fadein 1.3s;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: scale(0.95);}
+      to { opacity: 1; transform: scale(1);}
+    }
+    .message {
+      font-size: 1.15rem;
+      color: #d72660;
+      line-height: 1.6;
+      margin-bottom: 0;
+      animation: fadein 2.2s;
+    }
+    /* Confetti */
+    .confetti {
+      pointer-events: none;
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      z-index: 5;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      opacity: 0.8;
+      background: #ffb6b9;
+      animation: confetti-fall 1.5s ease-out forwards;
+    }
+    @keyframes confetti-fall {
+      0% { opacity: 1; transform: translateY(-40px) scale(1);}
+      80% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(400px) scale(0.7);}
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      .gift-box, .box, .lid { width: 120px; }
+      .box { height: 90px; top: 30px;}
+      .lid { height: 30px;}
+      .ribbon { left: 49px; height: 120px;}
+      .bow { left: 30px; width: 40px; height: 20px;}
+      .voucher-img { width: 95vw; max-width: 98vw;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title" id="main-title">¡Abre el regalo!</div>
+    <div class="gift-box" id="giftBox">
+      <div class="lid" id="lid"></div>
+      <div class="box"></div>
+      <div class="ribbon"></div>
+      <div class="bow"><span></span><span></span></div>
+    </div>
+    <canvas class="confetti hidden" id="confetti"></canvas>
+    <!-- Voucher & message will appear here -->
+    <img src="voucher.png" alt="Birthday Voucher" class="voucher-img hidden" id="voucherImg">
+    <div class="message hidden" id="customMsg">
+      Zorionak Adrii 🩷🩷🩷 <br>
+      Por más cumples, viajes y talleres juntas!<br>
+      <strong>De: Leire, Nerea y Minh</strong>
+    </div>
+  </div>
+  <script>
+    // Gift box opening animation
+    const giftBox = document.getElementById('giftBox');
+    const lid = document.getElementById('lid');
+    const confettiCanvas = document.getElementById('confetti');
+    const voucherImg = document.getElementById('voucherImg');
+    const customMsg = document.getElementById('customMsg');
+    const mainTitle = document.getElementById('main-title');
+
+    let opened = false;
+    giftBox.addEventListener('click', function () {
+      if (opened) return;
+      opened = true;
+      // Lid open animation
+      lid.style.transform = 'rotateX(70deg) translateY(-60px)';
+      // Confetti animation
+      showConfetti();
+      // Reveal voucher and message
+      setTimeout(() => {
+        voucherImg.classList.remove('hidden');
+        customMsg.classList.remove('hidden');
+        giftBox.classList.add('hidden');
+        mainTitle.textContent = "¡Feliz Cumple Adrii!";
+      }, 1200);
+    });
+
+    // Confetti animation logic
+    function showConfetti() {
+      confettiCanvas.classList.remove('hidden');
+      const ctx = confettiCanvas.getContext('2d');
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+      const colors = ["#ffb6b9","#d72660","#fff","#6c5b7b","#355c7d","#f8b195"];
+      let pieces = [];
+      for (let i = 0; i < 36; i++) {
+        pieces.push({
+          x: Math.random() * confettiCanvas.width,
+          y: -30,
+          r: 9 + Math.random() * 7,
+          color: colors[Math.floor(Math.random()*colors.length)],
+          dx: (Math.random() - 0.5) * 7,
+          dy: 3 + Math.random() * 3
+        });
+      }
+      let frame = 0;
+      function animate() {
+        ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+        pieces.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+          p.x += p.dx;
+          p.y += p.dy;
+          p.dy += 0.3; // gravity
+        });
+        frame++;
+        if(frame < 65) requestAnimationFrame(animate);
+        else confettiCanvas.classList.add('hidden');
+      }
+      animate();
+    }
+  </script>
+</body>
+</html>
